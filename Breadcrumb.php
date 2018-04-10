@@ -4,7 +4,7 @@ Component Name: Breadcrumb Component
 Description: Display a breadcrumb. You can customize where it should be displayed in Theme Options page.
 Category: Layout
 Tags: Breadcrumb
-Version: 1.0
+Version: 1.0.0
 Author: WAGA Team <dev@waga.it>
 Author URI: http://www.waga.it
 */
