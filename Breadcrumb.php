@@ -33,7 +33,7 @@ class Breadcrumb extends \Waboot\Component {
 		$display_zone = $this->get_display_zone();
 		if( $display_zone === 'header'){
 			add_action('waboot/header',[$this,'display_tpl']);
-		}else{
+		}elseif($display_zone !== '__none'){
 			if(\method_exists($this,'add_zone_action')){
 				$this->add_zone_action([$this,'display_tpl']);
 			}else{
