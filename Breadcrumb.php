@@ -4,7 +4,7 @@ Component Name: Breadcrumb Component
 Description: Display a breadcrumb. You can customize where it should be displayed in Theme Options page.
 Category: Layout
 Tags: Breadcrumb
-Version: 1.0.0
+Version: 1.1.0
 Author: Waboot Team <info@waboot.io>
 Author URI: http://www.waboot.io
 */
@@ -15,14 +15,14 @@ if(!class_exists("\\Waboot\\Component")){
 
 class Breadcrumb extends \Waboot\Component {
 
-	var $default_zone = "header";
+	var $default_zone = 'header';
 
 	/**
 	 * This method will be executed at Wordpress startup (every page load)
 	 */
 	public function setup(){
 		parent::setup();
-		add_action("init",[$this,'add_shortcode'],15);
+		add_action('init',[$this,'add_shortcode'],15);
 	}
 
 	/**
@@ -31,13 +31,27 @@ class Breadcrumb extends \Waboot\Component {
 	public function run(){
 		parent::run();
 		$display_zone = $this->get_display_zone();
-		$display_priority = $this->get_display_priority();
-
-		if($display_zone == "header"){
-			add_action("waboot/header",[$this,"display_tpl"]);
+		if( $display_zone === 'header'){
+			add_action('waboot/header',[$this,'display_tpl']);
 		}else{
-			WabootLayout()->add_zone_action($display_zone,[$this,"display_tpl"],intval($display_priority));
+			if(\method_exists($this,'add_zone_action')){
+				$this->add_zone_action([$this,'display_tpl']);
+			}
 		}
+	}
+
+	/**
+	 * Adding the breadcrumb shortcode
+	 *
+	 * @hooked 'init'
+	 */
+	public function add_shortcode(){
+		add_shortcode('wb_breadcrumb', function(){
+			ob_start();
+			$this->display_tpl(true);
+			$output = trim(preg_replace( '|[\r\n\t]|', '', ob_get_clean()));
+			return $output;
+		});
 	}
 
 	/**
@@ -47,12 +61,23 @@ class Breadcrumb extends \Waboot\Component {
 	 */
 	public function display_tpl($force = false){
 		if(!$this->can_display() && !$force) return;
+		try{
+			$v = new \WBF\components\mvc\HTMLView($this->theme_relative_path.'/templates/breadcrumb.php');
+			$args = [
+				'is_woocommerce' => function_exists('is_woocommerce') && is_woocommerce()
+			];
+			$v->clean()->display($args);
+		}catch (\Exception $e){
+			trigger_error($e->getMessage(),E_USER_NOTICE);
+		}
+	}
 
-		$v = new \WBF\components\mvc\HTMLView($this->theme_relative_path."/templates/breadcrumb.php");
-		$args = [
-			'is_woocommerce' => function_exists('is_woocommerce') && is_woocommerce()
-		];
-		$v->clean()->display($args);
+	/**
+	 * Display the breadcrumb
+	 * @use do_shortcode()
+	 */
+	static function display(){
+		echo do_shortcode('[wb_breadcrumb]');
 	}
 
 	/**
@@ -69,9 +94,9 @@ class Breadcrumb extends \Waboot\Component {
 			if(isset($result)) return $result;
 
 			$archive_types = array(
-				"archive" => __("Archive page","waboot"),
-				"tag"     => __("Tag archive","waboot"),
-				"tax"     => __("Taxonomy archive","waboot"),
+				'archive' => __('Archive page','waboot'),
+				'tag' => __('Tag archive','waboot'),
+				'tax' => __('Taxonomy archive','waboot'),
 			);
 			$blacklist = array_unique(array_merge($blacklist,array()));
 			$result = array();
@@ -84,27 +109,27 @@ class Breadcrumb extends \Waboot\Component {
 			return $result;
 		};
 
-		$show_on_front_setting = get_option("show_on_front","posts");
+		$show_on_front_setting = get_option('show_on_front',"posts");
 
 		if($show_on_front_setting == "page"){
 			$bd_locs = array_merge([
-				"homepage" => "Homepage",
-				"posts_page" => _x("Blog","Breadcrumb location","waboot")
+				'homepage' => 'Homepage',
+				'posts_page' => _x('Blog','Breadcrumb location','waboot')
 			],wbf_get_filtered_post_types(),$get_archive_pages_type());
 		}else{
 			$bd_locs = array_merge([
-				"homepage" => "Homepage"
+				'homepage' => 'Homepage'
 			],wbf_get_filtered_post_types(),$get_archive_pages_type());
 		}
 
-		$bd_locs = apply_filters("waboot/component/breadcrumb/locations", $bd_locs);
+		$bd_locs = apply_filters('waboot/component/breadcrumb/locations', $bd_locs);
 
 		if (!empty($bd_locs)) {
 			$orgzr = \WBF\modules\options\Organizer::getInstance();
 
-			$orgzr->set_group($this->name."_component");
+			$orgzr->set_group( $this->name . '_component');
 
-			$orgzr->add_section("layout",_x("Layout","Theme options section","waboot"));
+			$orgzr->add_section('layout',_x('Layout','Theme options section','waboot'));
 
 			$std = [
 				'homepage' => 1,
@@ -126,7 +151,7 @@ class Breadcrumb extends \Waboot\Component {
 				'type' => 'multicheck',
 				'options' => $bd_locs,
 				'std' => $std
-			],"layout");
+			],'layout');
 
 			$orgzr->reset_group();
 			$orgzr->reset_section();
@@ -140,14 +165,14 @@ class Breadcrumb extends \Waboot\Component {
 	 * @param string $current_location the current location of breadcrumb. Not used at the moment, but it can be any arbitrary string.
 	 * @param array $args settings for breadcrumb (see: trail() documentation)
 	 */
-	public static function do_breadcrumb($post_id = null, $current_location = "", $args = array()) {
+	public static function do_breadcrumb($post_id = null, $current_location = '', $args = array()) {
 		if(!function_exists( "\\WBF\\components\\breadcrumb\\trail" )) return;
 
 		$args = wp_parse_args($args, array(
-			'container' => "div",
-			'separator' => "/",
+			'container' => 'div',
+			'separator' => '/',
 			'show_browse' => false,
-			'additional_classes' => ""
+			'additional_classes' => ''
 		));
 
 		\WBF\components\breadcrumb\trail($args);
@@ -187,15 +212,15 @@ class Breadcrumb extends \Waboot\Component {
 
 		if($current_page_type != "common"){
 			//We are in some sort of homepage
-			$show_on_front_setting = get_option("show_on_front","posts");
-			if($show_on_front_setting == "page"){
-				if($current_page_type == \WBF\components\utils\Query::PAGE_TYPE_STATIC_HOME && in_array("homepage", $allowed_locations)){
+			$show_on_front_setting = get_option('show_on_front','posts');
+			if( $show_on_front_setting == 'page'){
+				if($current_page_type == \WBF\components\utils\Query::PAGE_TYPE_STATIC_HOME && in_array('homepage', $allowed_locations)){
 					$show_bc = true;
-				}elseif($current_page_type == \WBF\components\utils\Query::PAGE_TYPE_BLOG_PAGE && in_array("posts_page", $allowed_locations)){
+				}elseif($current_page_type == \WBF\components\utils\Query::PAGE_TYPE_BLOG_PAGE && in_array('posts_page', $allowed_locations)){
 					$show_bc = true;
 				}
 			}else{
-				if(in_array("homepage", $allowed_locations)) {
+				if(in_array('homepage', $allowed_locations)) {
 					$show_bc = true;
 				}
 			}
@@ -222,19 +247,5 @@ class Breadcrumb extends \Waboot\Component {
 		}
 
 		return $show_bc;
-	}
-
-	/**
-	 * Adding the breadcrumb shortcode
-	 *
-	 * @hooked 'init'
-	 */
-	public function add_shortcode(){
-		add_shortcode('wb_breadcrumb', function(){
-			ob_start();
-			$this->display_tpl(true);
-			$output = trim(preg_replace( "|[\r\n\t]|", "", ob_get_clean()));
-			return $output;
-		});
 	}
 }
