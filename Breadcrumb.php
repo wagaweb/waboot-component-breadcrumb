@@ -36,6 +36,9 @@ class Breadcrumb extends \Waboot\Component {
 		}else{
 			if(\method_exists($this,'add_zone_action')){
 				$this->add_zone_action([$this,'display_tpl']);
+			}else{
+				$display_priority = $this->get_display_priority();
+				WabootLayout()->add_zone_action($display_zone,[$this,'display_tpl'],intval($display_priority));
 			}
 		}
 	}
