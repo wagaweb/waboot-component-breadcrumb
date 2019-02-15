@@ -66,7 +66,7 @@ trait ItemsDetectorTrait{
 			$parents[] = $item;
 
 			if(0 >= $post->post_parent){
-				//If there's no longer a post parent, brea out of the loop.
+				//If there's no longer a post parent, break out of the loop.
 				break;
 			}
 
@@ -109,40 +109,59 @@ trait ItemsDetectorTrait{
 	 * @return void
 	 */
 	public function addPostHierarchyItems($post_id) {
-		$permalink_structure = get_option( 'permalink_structure' );
+		$permalinkStructure = get_option( 'permalink_structure' );
+		$postType = get_post_type($post_id);
+		$postTypeObject = get_post_type_object($postType);
 
-		/* Get the post type. */
-		$post_type = get_post_type($post_id);
-		$post_type_object = get_post_type_object($post_type);
-
-		/*
-		 * WAGA MOD: Display the archive page before the categories
-		 */
-
-		/* If there's an archive page, add it to the trail. */
-		if (!empty($post_type_object->has_archive)) {
-			/* Add support for a non-standard label of 'archive_title' (special use case). */
-			$label = !empty($post_type_object->labels->archive_title) ? $post_type_object->labels->archive_title : $post_type_object->labels->name;
-			$this->items[] = '<a href="' . get_post_type_archive_link($post_type) . '">' . $label . '</a>';
+		// If there's an archive page, add it to the trail.
+		if ($postTypeObject instanceof \WP_Post_Type && !empty($postTypeObject->has_archive)) {
+			// Add support for a non-standard label of 'archive_title' (special use case).
+			$label = !empty($postTypeObject->labels->archive_title) ? $postTypeObject->labels->archive_title : $postTypeObject->labels->name;
+			$item = new WabootBreadcrumbItem($label,get_post_type_archive_link($postType));
+			$this->addItem($item);
 		}
 
-		/* If this is the 'post' post type, get the rewrite front items and map the rewrite tags. */
-		if ('post' === $post_type) {
-			/* Add $wp_rewrite->front to the trail. */
-			$this->do_rewrite_front_items();
-			/* Map the rewrite tags. */
-			$this->map_rewrite_tags( $post_id, $permalink_structure );
-		} /* If the post type has rewrite rules. */
-		elseif (false !== $post_type_object->rewrite) {
-			/* Map rewrite tags */
-			$this->map_rewrite_tags( $post_id, $permalink_structure );
-			/* If 'with_front' is true, add $wp_rewrite->front to the trail. */
-			if ($post_type_object->rewrite['with_front'])
-				$this->do_rewrite_front_items();
-			/* If there's a path, check for parents. */
-			if (!empty($post_type_object->rewrite['slug']))
-				$this->do_path_parents($post_type_object->rewrite['slug']);
+		// If this is the 'post' post type, get the rewrite front items and map the rewrite tags.
+		if ($postType === 'post') {
+			// Add $wp_rewrite->front to the trail. */
+			$this->addFrontItems();
+			// Map the rewrite tags. */
+			$this->map_rewrite_tags( $post_id, $permalinkStructure );
+		} elseif ($postTypeObject instanceof \WP_Post_Type && $postTypeObject->rewrite !== false) {
+			// If the post type has rewrite rules.
+			// Map rewrite tags
+			$this->map_rewrite_tags( $post_id, $permalinkStructure );
+			// If 'with_front' is true, add $wp_rewrite->front to the trail.
+			if ($postTypeObject->rewrite['with_front']){
+				$this->addFrontItems();
+			}
+			// If there's a path, check for parents.
+			if (!empty($postTypeObject->rewrite['slug'])){
+				$this->addPostParentsByPath($postTypeObject->rewrite['slug']);
+			}
 		}
+	}
+
+	/**
+	 * Add front items based on $wp_rewrite->front.
+	 */
+	public function addFrontItems(){
+		global $wp_rewrite;
+
+		if($wp_rewrite->front){
+			$this->addPostParentsByPath($wp_rewrite->front);
+		}
+	}
+
+	/**
+	 * Add parent posts by path.  Currently, this method only supports getting parents of the 'page'
+	 * post type.  The goal of this function is to create a clear path back to home given what would
+	 * normally be a "ghost" directory.  If any page matches the given path, it'll be added.
+	 *
+	 * @param string $path The path (slug) to search for posts by.
+	 */
+	public function addPostParentsByPath($path){
+		//todo
 	}
 
 	/**

@@ -23,12 +23,10 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	 *
 	 * @param string $label
 	 * @param string|null $link
-	 *
-	 * @throws \WBF\components\breadcrumb\BreadcrumbException
 	 */
 	public function __construct($label, $link = null) {
 		if(!\is_string($label)){
-			throw new \WBF\components\breadcrumb\BreadcrumbException('Invalid label provided');
+			$label = '-invalidLabel-';
 		}
 		$this->setLabel($label);
 		if($link !== null && \is_string($link)){
