@@ -13,14 +13,23 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	 * @var string
 	 */
 	private $rel;
+	/**
+	 * @var string
+	 */
+	private $class;
 
 	/**
 	 * WabootBreadcrumbItem constructor.
 	 *
-	 * @param $label
+	 * @param string $label
 	 * @param string|null $link
+	 *
+	 * @throws \WBF\components\breadcrumb\BreadcrumbException
 	 */
 	public function __construct($label, $link = null) {
+		if(!\is_string($label)){
+			throw new \WBF\components\breadcrumb\BreadcrumbException('Invalid label provided');
+		}
 		$this->setLabel($label);
 		if($link !== null && \is_string($link)){
 			$this->setLink($link);
@@ -59,6 +68,9 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	 * @return string
 	 */
 	public function getRel() {
+		if($this->rel === null){
+			return 'bookmark';
+		}
 		return $this->rel;
 	}
 
@@ -66,6 +78,34 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	 * @param string $rel
 	 */
 	public function setRel( $rel ) {
-		$this->rel = $rel;
+		if(\is_string($rel)){
+			$this->rel = $rel;
+		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getClass() {
+		if($this->class === null){
+			return 'waboot-breadcrumb-item';
+		}
+		return 'waboot-breadcrumb-item '.$this->class;
+	}
+
+	/**
+	 * @param string $class
+	 */
+	public function setClass( $class ) {
+		if(\is_string($class)){
+			$this->class = $class;
+		}
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHtml() {
+		return sprintf('<a href="%s" rel="%s" class="%s" title="%s">%s</a>',$this->getLink(),$this->getRel(),$this->getClass(),esc_attr($this->getLabel()),$this->getLabel());
 	}
 }
