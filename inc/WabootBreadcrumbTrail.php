@@ -53,6 +53,8 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 		$args['labels'] = apply_filters('waboot/component/breadcrumb/breadcrumb_args/labels', wp_parse_args($args['labels'], $defaults['labels']));
 
 		$this->args = apply_filters('waboot/component/breadcrumb/breadcrumb_args', wp_parse_args($args, $defaults));
+
+		$this->populateItems();
 	}
 
 	public function populateItems(){
