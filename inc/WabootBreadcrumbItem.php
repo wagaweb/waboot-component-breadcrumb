@@ -61,7 +61,9 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	 * @param string $link
 	 */
 	public function setLink( $link ) {
-		$this->link = $link;
+		if(\is_string($link)){
+			$this->link = $link;
+		}
 	}
 
 	/**
@@ -106,6 +108,9 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	 * @return string
 	 */
 	public function getHtml() {
-		return sprintf('<a href="%s" rel="%s" class="%s" title="%s">%s</a>',$this->getLink(),$this->getRel(),$this->getClass(),esc_attr($this->getLabel()),$this->getLabel());
+		if($this->getLink() !== null){
+			return sprintf('<a href="%s" rel="%s" class="%s" title="%s">%s</a>',$this->getLink(),$this->getRel(),$this->getClass(),esc_attr($this->getLabel()),$this->getLabel());
+		}
+		return sprintf('<span class="%s">%s</span>',$this->getClass(),$this->getLabel());
 	}
 }
