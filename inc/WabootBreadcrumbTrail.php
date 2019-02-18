@@ -8,7 +8,7 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 	private $args;
 
 	public function __construct($args) {
-		$defaults = array(
+		$defaults = [
 			'container' => 'div',
 			'separator' => '&#47;',
 			'before' => '',
@@ -19,36 +19,33 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			'show_title' => true,
 			'show_browse' => true,
 			'echo' => true,
-
-			/* Post taxonomy (examples follow). */
-			'post_taxonomy' => array(
+			// Post taxonomy (examples follow).
+			'post_taxonomy' => [
 				// 'post'  => 'post_tag',
 				// 'book'  => 'genre',
-			),
-
-			/* Labels for text used (see Breadcrumb_Trail::default_labels). */
-			'labels' => array(
-				'browse'              => __( 'Browse:',                             'breadcrumb-trail' ),
-				'home'                => __( 'Home',                                'breadcrumb-trail' ),
-				'error_404'           => __( '404 Not Found',                       'breadcrumb-trail' ),
-				'archives'            => __( 'Archives',                            'breadcrumb-trail' ),
-				/* Translators: %s is the search query. The HTML entities are opening and closing curly quotes. */
-				'search'              => __( 'Search results for &#8220;%s&#8221;', 'breadcrumb-trail' ),
-				/* Translators: %s is the page number. */
-				'paged'               => __( 'Page %s',                             'breadcrumb-trail' ),
-				/* Translators: Minute archive title. %s is the minute time format. */
-				'archive_minute'      => __( 'Minute %s',                           'breadcrumb-trail' ),
-				/* Translators: Weekly archive title. %s is the week date format. */
-				'archive_week'        => __( 'Week %s',                             'breadcrumb-trail' ),
-
-				/* "%s" is replaced with the translated date/time format. */
+			],
+			// Labels for text used (see Breadcrumb_Trail::default_labels).
+			'labels' => [
+				'browse' => __( 'Browse:', 'breadcrumb-trail' ),
+				'home' => __( 'Home', 'breadcrumb-trail' ),
+				'error_404' => __( '404 Not Found', 'breadcrumb-trail' ),
+				'archives' => __( 'Archives', 'breadcrumb-trail' ),
+				// Translators: %s is the search query. The HTML entities are opening and closing curly quotes.
+				'search' => __( 'Search results for &#8220;%s&#8221;', 'breadcrumb-trail' ),
+				// Translators: %s is the page number. */
+				'paged' => __( 'Page %s', 'breadcrumb-trail' ),
+				// Translators: Minute archive title. %s is the minute time format.
+				'archive_minute' => __( 'Minute %s', 'breadcrumb-trail' ),
+				// Translators: Weekly archive title. %s is the week date format.
+				'archive_week' => __( 'Week %s', 'breadcrumb-trail' ),
+				// "%s" is replaced with the translated date/time format.
 				'archive_minute_hour' => '%s',
-				'archive_hour'        => '%s',
-				'archive_day'         => '%s',
-				'archive_month'       => '%s',
-				'archive_year'        => '%s',
-			)
-		);
+				'archive_hour' => '%s',
+				'archive_day' => '%s',
+				'archive_month' => '%s',
+				'archive_year' => '%s',
+			]
+		];
 
 		$args['labels'] = apply_filters('waboot/component/breadcrumb/breadcrumb_args/labels', wp_parse_args($args['labels'], $defaults['labels']));
 
@@ -57,6 +54,9 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 		$this->populateItems();
 	}
 
+	/**
+	 * Populate the items array
+	 */
 	public function populateItems(){
 		if(is_front_page()){
 			//Only show front items if the 'show_on_front' argument is set to 'true'.
@@ -82,25 +82,25 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			}elseif(is_post_type_archive()){
 				$this->addPostTypeArchiveItems();
 			}elseif(is_category() || is_tag() || is_tax()){
-
+				$this->addTermArchiveItems();
 			}elseif(is_author()){
-
+				$this->addUserArchiveItems();
 			}elseif(get_query_var( 'minute' ) && get_query_var( 'hour' )){
-
+				$this->addMinuteHourArchiveItems();
 			}elseif(get_query_var( 'minute' )){
-
+				$this->addMinuteArchiveItems();
 			}elseif(get_query_var( 'hour' )){
-
+				$this->addHourArchiveItems();
 			}elseif(is_day()){
-
+				$this->addDayArchiveItems();
 			}elseif(get_query_var( 'w' )){
-
+				$this->addWeekArchiveItems();
 			}elseif(is_month()){
-
+				$this->addMonthArchiveItems();
 			}elseif(is_year()){
-
+				$this->addYearArchiveItems();
 			}elseif(is_archive()){
-
+				$this->addDefaultArchiveItems();
 			}elseif(is_search()){
 				$this->addSearchItems();
 			}elseif(is_404()){
@@ -110,7 +110,7 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 
 		$this->addPagedItems();
 
-		$this->items = apply_filters( 'waboot/component/breadcrumb/items', $this->items, $this->args );
+		//$this->items = apply_filters( 'waboot/component/breadcrumb/items', $this->items, $this->args );
 	}
 
 	/**
@@ -136,63 +136,97 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
      *
      * @since  1.0
      * @access public
-     * @return string
+     * @return string|void
      */
     public function trail() {
-
         $breadcrumb = '';
 
-	    /* Allow developers to edit BC items. */
-	    $this->items = apply_filters("wbf/breadcrumb_trail/items",$this->items);
+	    $items = apply_filters( 'waboot/component/breadcrumb/items', $this->getItems(), $this->args );
+
+	    $itemCount = count($items);
 
         /* Connect the breadcrumb trail if there are items in the trail. */
-        if ( !empty( $this->items ) && is_array( $this->items ) ) {
+        if ( !empty( $items ) && is_array( $items ) ) {
 
             /* Make sure we have a unique array of items. */
-            $this->items = array_unique($this->items);
+	        $items = array_unique($items);
 
             /* Open the breadcrumb trail containers. */
-            $breadcrumb = "\n\t\t" . '<' . tag_escape($this->args['container']) . ' class="breadcrumb-trail breadcrumbs ' . $this->args['additional_classes'] . '" itemprop="breadcrumb">';
-
-            /* Crea Wrapper */
-            $breadcrumb .= !empty( $this->args['wrapper_start'] )? $this->args['wrapper_start'] : "";
-
-            /* If $before was set, wrap it in a container. */
-            $breadcrumb .= ( !empty( $this->args['before'] ) ? "\n\t\t\t" . '<span class="trail-before">' . $this->args['before'] . '</span> ' . "\n\t\t\t" : '' );
+            $breadcrumb = $this->trailStart();
 
             /* Add 'browse' label if it should be shown. */
-            if ( true === $this->args['show_browse'] )
-                $breadcrumb .= "\n\t\t\t" . '<span class="trail-browse">' . $this->args['labels']['browse'] . '</span> ';
+            if ( $this->args['show_browse'] === true ){
+	            $breadcrumb .= "\n\t\t\t" . '<span class="trail-browse">' . $this->args['labels']['browse'] . '</span> ';
+            }
 
-            /* Adds the 'trail-begin' class around first item if there's more than one item. */
-            if ( 1 < count( $this->items ) )
-                array_unshift( $this->items, '<span class="trail-begin">' . array_shift( $this->items ) . '</span>' );
+            // Adds the 'trail-begin' class around first item if there's more than one item.
+            if ( $itemCount > 1 ){
+            	$mustPrependTrailBegin = true;
+            }else{
+	            $mustPrependTrailBegin = false;
+            }
 
-            /* Adds the 'trail-end' class around last item. */
-            array_push( $this->items, '<span class="trail-end">' . array_pop( $this->items ) . '</span>' );
-
-            /* Format the separator. */
+            // Format the separator.
             $separator = ( !empty( $this->args['separator'] ) ? '<span class="sep">' . $this->args['separator'] . '</span>' : '<span class="sep">/</span>' );
 
-            /* Join the individual trail items into a single string. */
-            $breadcrumb .= join( "\n\t\t\t {$separator} ", $this->items );
-
-            /* If $after was set, wrap it in a container. */
-            $breadcrumb .= ( !empty( $this->args['after'] ) ? "\n\t\t\t" . ' <span class="trail-after">' . $this->args['after'] . '</span>' : '' );
-
-            /* Chiude Wrapper */
-            $breadcrumb .= !empty( $this->args['wrapper_end'] )? $this->args['wrapper_end'] : "";
+            foreach ($items as $k => $item){
+            	if(!$item instanceof WabootBreadcrumbItem){
+            		continue;
+	            }
+            	if($k === 0 && $mustPrependTrailBegin){
+            		$breadcrumb .= '<span class="trail-begin">';
+	            }
+            	if($k === $itemCount){
+            		$breadcrumb .= '<span class="trail-end">';
+	            }
+            	$breadcrumb .= $item->getHtml();
+            	$breadcrumb .= $separator;
+            	if( ($k === 0 && $mustPrependTrailBegin) || ($k === $itemCount) ){
+		            $breadcrumb .= '</span>';
+	            }
+            }
 
             /* Close the breadcrumb trail containers. */
-            $breadcrumb .= "\n\t\t" . '</' . tag_escape( $this->args['container'] ) . '>';
+            $breadcrumb .= $this->trailEnd();
         }
 
         /* Allow developers to filter the breadcrumb trail HTML. */
         $breadcrumb = apply_filters( 'breadcrumb_trail', $breadcrumb, $this->args );
 
-        if ( true === $this->args['echo'] )
-            echo $breadcrumb;
-        else
-            return $breadcrumb;
+        if ( $this->args['echo'] === true ){
+	        echo $breadcrumb;
+        } else{
+	        return $breadcrumb;
+        }
+    }
+
+	/**
+	 * @return string
+	 */
+    public function trailStart(){
+	    $str = "\n\t\t" . '<' . tag_escape($this->args['container']) . ' class="breadcrumb-trail breadcrumbs ' . $this->args['additional_classes'] . '" itemprop="breadcrumb">';
+
+	    // Open Wrapper
+	    $str .= !empty( $this->args['wrapper_start'] )? $this->args['wrapper_start'] : "";
+
+	    // If $before was set, wrap it in a container.
+	    $str .= ( !empty( $this->args['before'] ) ? "\n\t\t\t" . '<span class="trail-before">' . $this->args['before'] . '</span> ' . "\n\t\t\t" : '' );
+
+	    return $str;
+    }
+
+	/**
+	 * @return string
+	 */
+    public function trailEnd(){
+	    // If $after was set, wrap it in a container.
+	    $str = ( !empty( $this->args['after'] ) ? "\n\t\t\t" . ' <span class="trail-after">' . $this->args['after'] . '</span>' : '' );
+
+	    // Close Wrapper
+	    $str .= !empty( $this->args['wrapper_end'] )? $this->args['wrapper_end'] : "";
+
+	    $str .= "\n\t\t" . '</' . tag_escape( $this->args['container'] ) . '>';
+
+	    return $str;
     }
 }

@@ -6,5 +6,8 @@ if($is_woocommerce && function_exists("woocommerce_breadcrumb")){
 		'delimiter'  => '<span class="sep">&nbsp;&#47;&nbsp;</span>'
 	]);
 }else{
-	Breadcrumb::do_breadcrumb(null, 'before_inner', ['wrapper_start' => '<div class="breadcrumbs__wrapper">', 'wrapper_end' => '</div>']);
+	Breadcrumb::render_breadcrumb(null, 'before_inner', [
+		'wrapper_start' => '<div class="breadcrumbs__wrapper">',
+		'wrapper_end' => '</div>'
+	]);
 }

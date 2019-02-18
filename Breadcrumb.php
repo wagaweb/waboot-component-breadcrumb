@@ -22,7 +22,14 @@ class Breadcrumb extends \Waboot\Component {
 	 */
 	public function setup(){
 		parent::setup();
-		add_action('init',[$this,'add_shortcode'],15);
+		add_action('init',function(){
+			add_shortcode('wb_breadcrumb', function(){
+				ob_start();
+				$this->display_tpl(true);
+				$output = trim(preg_replace( '|[\r\n\t]|', '', ob_get_clean()));
+				return $output;
+			});
+		},15);
 	}
 
 	/**
@@ -41,46 +48,6 @@ class Breadcrumb extends \Waboot\Component {
 				WabootLayout()->add_zone_action($display_zone,[$this,'display_tpl'],intval($display_priority));
 			}
 		}
-	}
-
-	/**
-	 * Adding the breadcrumb shortcode
-	 *
-	 * @hooked 'init'
-	 */
-	public function add_shortcode(){
-		add_shortcode('wb_breadcrumb', function(){
-			ob_start();
-			$this->display_tpl(true);
-			$output = trim(preg_replace( '|[\r\n\t]|', '', ob_get_clean()));
-			return $output;
-		});
-	}
-
-	/**
-	 * Display component template
-	 *
-	 * @param bool $force
-	 */
-	public function display_tpl($force = false){
-		if(!$this->can_display() && !$force) return;
-		try{
-			$v = new \WBF\components\mvc\HTMLView($this->theme_relative_path.'/templates/breadcrumb.php');
-			$args = [
-				'is_woocommerce' => function_exists('is_woocommerce') && is_woocommerce()
-			];
-			$v->clean()->display($args);
-		}catch (\Exception $e){
-			trigger_error($e->getMessage(),E_USER_NOTICE);
-		}
-	}
-
-	/**
-	 * Display the breadcrumb
-	 * @use do_shortcode()
-	 */
-	static function display(){
-		echo do_shortcode('[wb_breadcrumb]');
 	}
 
 	/**
@@ -162,23 +129,51 @@ class Breadcrumb extends \Waboot\Component {
 	}
 
 	/**
+	 * Display component template
+	 *
+	 * @param bool $force
+	 */
+	public function display_tpl($force = false){
+		if(!$this->can_display() && !$force){
+			return;
+		}
+		try{
+			$v = new \WBF\components\mvc\HTMLView($this->theme_relative_path.'/templates/breadcrumb.php');
+			$args = [
+				'is_woocommerce' => function_exists('is_woocommerce') && is_woocommerce(),
+			];
+			$v->clean()->display($args);
+		}catch (\Exception $e){
+			trigger_error($e->getMessage(),E_USER_NOTICE);
+		}
+	}
+
+	/**
+	 * Render the breadcrumb through the shortcode
+	 * @use do_shortcode()
+	 */
+	static function render_shortcode(){
+		echo do_shortcode('[wb_breadcrumb]');
+	}
+
+	/**
 	 * Display the breadcrumb for $post_id or global $post->ID
 	 *
 	 * @param null $post_id
 	 * @param string $current_location the current location of breadcrumb. Not used at the moment, but it can be any arbitrary string.
 	 * @param array $args settings for breadcrumb (see: trail() documentation)
 	 */
-	public static function do_breadcrumb($post_id = null, $current_location = '', $args = array()) {
-		if(!function_exists( "\\WBF\\components\\breadcrumb\\trail" )) return;
-
-		$args = wp_parse_args($args, array(
+	public static function render_breadcrumb($post_id = null, $current_location = '', $args = []) {
+		$args = wp_parse_args($args, [
 			'container' => 'div',
 			'separator' => '/',
 			'show_browse' => false,
 			'additional_classes' => ''
-		));
+		]);
 
-		\WBF\components\breadcrumb\trail($args);
+		$bc = new WabootBreadcrumbTrail($args);
+
+		$bc->trail();
 	}
 
 	/**
