@@ -114,6 +114,24 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function canShowTitles(){
+		return $this->args['show_title'] === true;
+	}
+
+	/**
+	 * @param $labelIndex
+	 * @return string
+	 */
+	public function getLabel($labelIndex){
+		if(\array_key_exists($labelIndex,$this->args['labels'])){
+			return $this->args['labels'][$labelIndex];
+		}
+		return $labelIndex;
+	}
+
+	/**
      * Formats and outputs the breadcrumb trail.
      *
      * @since  1.0

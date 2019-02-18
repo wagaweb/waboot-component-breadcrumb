@@ -5,8 +5,8 @@ trait ItemsDetectorTrait{
 	 * Adds items for the front page to the items array.
 	 */
 	public function addFrontPageItems(){
-		if ( $this->args['show_title'] ){
-			$label = (is_multisite() && true === $this->args['network']) ? get_bloginfo('name') : $this->args['labels']['home'];
+		if ( $this->canShowTitles() ){
+			$label = (is_multisite() && true === $this->args['network']) ? get_bloginfo('name') : $this->getLabel('home');
 			$item = new WabootBreadcrumbItem($label,'');
 			$this->addItem($item);
 		}
@@ -26,7 +26,7 @@ trait ItemsDetectorTrait{
 	 * Adds the current site's home page link to the items array.
 	 */
 	public function addSiteHomeLink(){
-		$label = ($this->args['network'] && is_multisite() && !is_main_site()) ? get_bloginfo('name') : $this->args['labels']['home'];
+		$label = ($this->args['network'] && is_multisite() && !is_main_site()) ? get_bloginfo('name') : $this->getLabel('home');
 		$rel = ($this->args['network'] && is_multisite() && !is_main_site()) ? '' : 'home';
 		$item = new WabootBreadcrumbItem($label,home_url());
 		$item->setRel($rel);
@@ -50,7 +50,7 @@ trait ItemsDetectorTrait{
 		if(is_paged()){
 			$item = new WabootBreadcrumbItem($title,get_permalink($postId));
 			$this->addItem($item);
-		}elseif(\is_string($title) && $this->args['show_title']){
+		}elseif(\is_string($title) && $this->canShowTitles()){
 			$item = new WabootBreadcrumbItem($title,'');
 			$this->addItem($item);
 		}
@@ -87,15 +87,15 @@ trait ItemsDetectorTrait{
 	 * Adds the page/paged number to the items array.
 	 */
 	public function addPagedItems(){
-		if(!$this->args['show_title']){
+		if(!$this->canShowTitles()){
 			return;
 		}
 		if (is_singular() && 1 < get_query_var('page')){
-			$label = sprintf($this->args['labels']['paged'], number_format_i18n(absint(get_query_var('page'))));
+			$label = sprintf($this->getLabel('paged'), number_format_i18n(absint(get_query_var('page'))));
 			$item = new WabootBreadcrumbItem($label,'');
 			$this->addItem($item);
 		}elseif(is_paged()){
-			$label = sprintf($this->args['labels']['paged'], number_format_i18n(absint(get_query_var('paged'))));
+			$label = sprintf($this->getLabel('paged'), number_format_i18n(absint(get_query_var('paged'))));
 			$item = new WabootBreadcrumbItem($label,'');
 			$this->addItem($item);
 		}
@@ -239,21 +239,21 @@ trait ItemsDetectorTrait{
 			switch($tag){
 				case '%year%':
 					// If using the %year% tag, add a link to the yearly archive.
-					$label = sprintf($this->args['labels']['archive_year'], get_the_time(_x('Y', 'yearly archives date format', 'breadcrumb-trail')));
+					$label = sprintf($this->getLabel('archive_year'), get_the_time(_x('Y', 'yearly archives date format', 'breadcrumb-trail')));
 					$url = get_year_link(get_the_time('Y', $postId));
 					$item = new WabootBreadcrumbItem($label,$url);
 					$this->addItem($item);
 					break;
 				case '%monthnum%':
 					// If using the %monthnum% tag, add a link to the monthly archive.
-					$label = sprintf($this->args['labels']['archive_month'], get_the_time(_x('F', 'monthly archives date format', 'breadcrumb-trail')));
+					$label = sprintf($this->getLabel('archive_month'), get_the_time(_x('F', 'monthly archives date format', 'breadcrumb-trail')));
 					$url = get_month_link(get_the_time('Y', $postId), get_the_time('m', $postId));
 					$item = new WabootBreadcrumbItem($label,$url);
 					$this->addItem($item);
 					break;
 				case '%day%':
 					// If using the %day% tag, add a link to the daily archive.
-					$label = sprintf($this->args['labels']['archive_day'], get_the_time(_x('j', 'daily archives date format', 'breadcrumb-trail')));
+					$label = sprintf($this->getLabel('archive_day'), get_the_time(_x('j', 'daily archives date format', 'breadcrumb-trail')));
 					$url = get_day_link(get_the_time('Y', $postId), get_the_time('m', $postId), get_the_time('d', $postId));
 					$item = new WabootBreadcrumbItem($label,$url);
 					$this->addItem($item);
@@ -415,7 +415,7 @@ trait ItemsDetectorTrait{
 			if (1 < get_query_var('page')){
 				$newItem = new WabootBreadcrumbItem($postTitle,get_permalink($postId));
 				$this->addItem($newItem);
-			} elseif ($this->args['show_title'] === true){
+			} elseif ($this->canShowTitles()){
 				$newItem = new WabootBreadcrumbItem($postTitle);
 				$this->addItem($newItem);
 			}
@@ -481,7 +481,7 @@ trait ItemsDetectorTrait{
 			$newItemLabel = post_type_archive_title( '', false );
 			$newItemUrl = get_post_type_archive_link( $post_type_object->name );
 			$this->addItem(new WabootBreadcrumbItem($newItemLabel,$newItemUrl));
-		} elseif ($this->args['show_title'] === true){
+		} elseif ($this->canShowTitles()){
 			$this->addItem(new WabootBreadcrumbItem(post_type_archive_title('', false)));
 		}
 	}
@@ -531,11 +531,11 @@ trait ItemsDetectorTrait{
 	 */
 	public function addSearchItems(){
 		if (is_paged()){
-			$newItemLabel = sprintf($this->args['labels']['search'], get_search_query());
+			$newItemLabel = sprintf($this->getLabel('search'), get_search_query());
 			$newItemUrl = get_search_link();
 			$this->addItem(new WabootBreadcrumbItem($newItemLabel,$newItemUrl));
-		} elseif ($this->args['show_title'] === true){
-			$newItemLabel = sprintf($this->args['labels']['search'], get_search_query());
+		} elseif ($this->canShowTitles()){
+			$newItemLabel = sprintf($this->getLabel('search'), get_search_query());
 			$this->addItem(new WabootBreadcrumbItem($newItemLabel));
 		}
 	}
@@ -544,8 +544,8 @@ trait ItemsDetectorTrait{
 	 * Adds the items to the trail items array for 404 pages
 	 */
 	public function add404Items(){
-		if ($this->args['show_title'] === true){
-			$this->addItem(new WabootBreadcrumbItem($this->args['labels']['error_404']));
+		if ($this->canShowTitles()){
+			$this->addItem(new WabootBreadcrumbItem($this->getLabel('error_404')));
 		}
 	}
 }
