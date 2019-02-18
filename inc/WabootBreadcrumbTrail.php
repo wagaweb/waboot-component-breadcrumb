@@ -78,9 +78,9 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			if(is_home()){
 				$this->addPostsAndPagesItems();
 			}elseif(is_singular()){
-
+				$this->addSingularItems();
 			}elseif(is_post_type_archive()){
-
+				$this->addPostTypeArchiveItems();
 			}elseif(is_category() || is_tag() || is_tax()){
 
 			}elseif(is_author()){

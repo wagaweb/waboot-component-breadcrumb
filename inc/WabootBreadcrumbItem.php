@@ -17,6 +17,10 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	 * @var string
 	 */
 	private $class;
+	/**
+	 * @var string
+	 */
+	private $title;
 
 	/**
 	 * WabootBreadcrumbItem constructor.
@@ -105,10 +109,38 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 	/**
 	 * @return string
 	 */
+	public function getTitle() {
+		if($this->title === null){
+			return $this->getLabel();
+		}
+		return $this->title;
+	}
+
+	/**
+	 * @param string $title
+	 */
+	public function setTitle( $title ) {
+		$this->title = $title;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getHtml() {
 		if($this->getLink() !== null){
-			return sprintf('<a href="%s" rel="%s" class="%s" title="%s">%s</a>',$this->getLink(),$this->getRel(),$this->getClass(),esc_attr($this->getLabel()),$this->getLabel());
+			return sprintf(
+				'<a href="%s" rel="%s" class="%s" title="%s">%s</a>',
+				$this->getLink(),
+				$this->getRel(),
+				$this->getClass(),
+				esc_attr($this->getTitle()),
+				$this->getLabel()
+			);
 		}
-		return sprintf('<span class="%s">%s</span>',$this->getClass(),$this->getLabel());
+		return sprintf(
+			'<span class="%s">%s</span>',
+			$this->getClass(),
+			$this->getLabel()
+		);
 	}
 }
