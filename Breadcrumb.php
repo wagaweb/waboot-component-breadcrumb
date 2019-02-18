@@ -13,6 +13,8 @@ if(!class_exists("\\Waboot\\Component")){
 	require_once get_template_directory().'/inc/Component.php';
 };
 
+require_once __DIR__.'/inc/WabootBreadcrumbTrail.php';
+
 class Breadcrumb extends \Waboot\Component {
 
 	var $default_zone = 'header';

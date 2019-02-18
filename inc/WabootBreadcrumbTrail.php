@@ -1,5 +1,6 @@
 <?php
 
+require_once  __DIR__.'/WabootBreadcrumbItem.php';
 require_once  __DIR__.'/ItemsDetectorTrait.php';
 
 class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
@@ -148,9 +149,6 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
         /* Connect the breadcrumb trail if there are items in the trail. */
         if ( !empty( $items ) && is_array( $items ) ) {
 
-            /* Make sure we have a unique array of items. */
-	        $items = array_unique($items);
-
             /* Open the breadcrumb trail containers. */
             $breadcrumb = $this->trailStart();
 
@@ -176,13 +174,15 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
             	if($k === 0 && $mustPrependTrailBegin){
             		$breadcrumb .= '<span class="trail-begin">';
 	            }
-            	if($k === $itemCount){
+            	if($k === ($itemCount - 1)){
             		$breadcrumb .= '<span class="trail-end">';
 	            }
             	$breadcrumb .= $item->getHtml();
-            	$breadcrumb .= $separator;
-            	if( ($k === 0 && $mustPrependTrailBegin) || ($k === $itemCount) ){
+	            if( ($k === 0 && $mustPrependTrailBegin) || ($k === ($itemCount - 1)) ){
 		            $breadcrumb .= '</span>';
+	            }
+	            if($k !== ($itemCount - 1)){
+		            $breadcrumb .= $separator;
 	            }
             }
 

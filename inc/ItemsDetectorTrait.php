@@ -399,7 +399,7 @@ trait ItemsDetectorTrait{
 		$postId = get_queried_object_id();
 
 		// If the post has a parent, follow the parent trail.
-		if (0 < $post->post_parent){
+		if ($post->post_parent > 0){
 			$this->addPostParentsItems($post->post_parent);
 		}
 		// If the post doesn't have a parent, get its hierarchy based off the post type.
