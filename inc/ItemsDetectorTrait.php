@@ -682,11 +682,26 @@ trait ItemsDetectorTrait{
 	}
 
 	/**
-	 *
+	 * Adds the items to the trail items array for week archives.
 	 */
 	public function addWeekArchiveItems(){
 		// Add $wp_rewrite->front to the trail.
 		$this->addFrontItems();
+
+		// Get the year and week.
+		$year = sprintf($this->getLabel('archive_year'), get_the_time(_x('Y', 'yearly archives date format', 'breadcrumb-trail')));
+		$week = sprintf($this->getLabel('archive_week'),  get_the_time( _x( 'W', 'weekly archives date format', 'breadcrumb-trail' ) ) );
+
+		// Add the year item.
+		$this->addItem(new WabootBreadcrumbItem($year,get_year_link(get_the_time('Y'))));
+
+		// Add the week item.
+		if (is_paged()){
+			$newItemUrl = add_query_arg(['m' => get_the_time('Y'), 'w' => get_the_time('W')], home_url());
+			$this->addItem(new WabootBreadcrumbItem($week,$newItemUrl));
+		} elseif($this->canShowTitles()){
+			$this->addItem(new WabootBreadcrumbItem($week));
+		}
 	}
 
 	/**
@@ -695,6 +710,21 @@ trait ItemsDetectorTrait{
 	public function addMonthArchiveItems(){
 		// Add $wp_rewrite->front to the trail.
 		$this->addFrontItems();
+
+		// Get the year and month.
+		$year = sprintf($this->getLabel('archive_year'), get_the_time(_x('Y', 'yearly archives date format', 'breadcrumb-trail')));
+		$month = sprintf($this->getLabel('archive_month'), get_the_time(_x('F', 'monthly archives date format', 'breadcrumb-trail')));
+
+		// Add the year item.
+		$this->addItem(new WabootBreadcrumbItem($year,get_year_link(get_the_time('Y'))));
+
+		// Add the month item.
+		if ( is_paged() ){
+			$newItemUrl = get_month_link(get_the_time('Y'), get_the_time('m'));
+			$this->addItem(new WabootBreadcrumbItem($month,$newItemUrl));
+		} elseif ($this->canShowTitles()){
+			$this->addItem(new WabootBreadcrumbItem($month));
+		}
 	}
 
 	/**
@@ -703,14 +733,31 @@ trait ItemsDetectorTrait{
 	public function addYearArchiveItems(){
 		// Add $wp_rewrite->front to the trail.
 		$this->addFrontItems();
+
+		// Get the year.
+		$year  = sprintf( $this->getLabel('archive_year'),  get_the_time( _x( 'Y', 'yearly archives date format',  'breadcrumb-trail' ) ) );
+
+		// Add the year item.
+		if ( is_paged() ){
+			$newItemUrl = get_year_link(get_the_time('Y'));
+			$this->addItem(new WabootBreadcrumbItem($year,$newItemUrl));
+		} elseif ($this->canShowTitles()){
+			$this->addItem(new WabootBreadcrumbItem($year));
+		}
 	}
 
 	/**
-	 *
+	 * Adds the items to the trail items array for archives that don't have a more specific method
+	 * defined in this class.
 	 */
 	public function addDefaultArchiveItems(){
-		// Add $wp_rewrite->front to the trail.
-		$this->addFrontItems();
+		// If this is a date-/time-based archive, add $wp_rewrite->front to the trail.
+		if (is_date() || is_time()){
+			$this->addFrontItems();
+		}
+		if ($this->canShowTitles()){
+			$this->addItem($this->getLabel('archives'));
+		}
 	}
 
 	/**
