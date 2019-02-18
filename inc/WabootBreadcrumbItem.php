@@ -130,7 +130,7 @@ class WabootBreadcrumbItem implements \WBF\components\breadcrumb\BreadcrumbItemI
 		if($this->getLink() !== null){
 			return sprintf(
 				'<a href="%s" rel="%s" class="%s" title="%s">%s</a>',
-				$this->getLink(),
+				esc_url($this->getLink()),
 				$this->getRel(),
 				$this->getClass(),
 				esc_attr($this->getTitle()),

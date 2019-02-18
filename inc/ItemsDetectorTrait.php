@@ -486,8 +486,103 @@ trait ItemsDetectorTrait{
 		}
 	}
 
+	/**
+	 * Adds the items to the trail items array for taxonomy term archives
+	 */
 	public function addTermArchiveItems(){
-		//todo
+		global $wp_rewrite;
+
+		// Get some taxonomy and term variables.
+		$term = get_queried_object();
+		$taxonomy = get_taxonomy($term->taxonomy);
+
+		// If there are rewrite rules for the taxonomy.
+		if($taxonomy->rewrite === false){
+			return;
+		}
+
+		// If 'with_front' is true, dd $wp_rewrite->front to the trail.
+		if ($taxonomy->rewrite['with_front'] && $wp_rewrite->front){
+			$this->addFrontItems();
+		}
+
+		// Get parent pages by path if they exist.
+		$this->addPostParentsByPath($taxonomy->rewrite['slug']);
+
+		// Add post type archive if its 'has_archive' matches the taxonomy rewrite 'slug'.
+		if ($taxonomy->rewrite['slug']) {
+			$slug = trim($taxonomy->rewrite['slug'], '/');
+
+			/*
+			 * Deals with the situation if the slug has a '/' between multiple strings. For
+			 * example, "movies/genres" where "movies" is the post type archive.
+			 */
+			$matches = explode('/', $slug);
+
+			// If matches are found for the path.
+			if (isset($matches)) {
+				// Reverse the array of matches to search for posts in the proper order.
+				$matches = array_reverse($matches);
+
+				// Loop through each of the path matches.
+				foreach ($matches as $match) {
+					// If a match is found.
+					$slug = $match;
+
+					// Get public post types that match the rewrite slug.
+					$post_types = $this->getPostTypesBySlug($match);
+
+					if ( !empty( $post_types ) ) {
+						$post_type_object = $post_types[0];
+
+						// Add support for a non-standard label of 'archive_title' (special use case).
+						$label = !empty($post_type_object->labels->archive_title) ? $post_type_object->labels->archive_title : $post_type_object->labels->name;
+
+						// Add the post type archive link to the trail.
+						$newItem = new WabootBreadcrumbItem($label,get_post_type_archive_link($post_type_object->name));
+						$this->addItem($newItem);
+
+						// Break out of the loop.
+						break;
+					}
+				}
+			}
+		}
+
+		// If the taxonomy is hierarchical, list its parent terms.
+		if (is_taxonomy_hierarchical($term->taxonomy) && $term->parent){
+			$this->addTermParents($term->parent, $term->taxonomy);
+		}
+
+		// Add the term name to the trail end.
+		if (is_paged()){
+			$newItem = new WabootBreadcrumbItem(single_term_title('', false),get_term_link($term, $term->taxonomy));
+			$this->addItem($newItem);
+		} elseif ($this->canShowTitles()){
+			$newItem = new WabootBreadcrumbItem(single_term_title('', false));
+			$this->addItem($newItem);
+		}
+	}
+
+	/**
+	 * Gets post types by slug.  This is needed because the get_post_types() function doesn't exactly
+	 * match the 'has_archive' argument when it's set as a string instead of a boolean.
+	 *
+	 * @param int $slug The post type archive slug to search for.
+	 * @return array
+	 */
+	private function getPostTypesBySlug($slug) {
+		$return = [];
+
+		$post_types = get_post_types([], 'objects');
+
+		foreach ($post_types as $type) {
+			if ($slug === $type->has_archive || ($type->has_archive === true && $type->rewrite['slug'] === $slug)){
+				$return[] = $type;
+			}
+		}
+
+		return $return;
 	}
 
 	public function addUserArchiveItems(){
