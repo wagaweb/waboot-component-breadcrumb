@@ -534,7 +534,6 @@ trait ItemsDetectorTrait{
 			$newItemLabel = sprintf($this->args['labels']['search'], get_search_query());
 			$newItemUrl = get_search_link();
 			$this->addItem(new WabootBreadcrumbItem($newItemLabel,$newItemUrl));
-			$this->items[] = '<a href="' . get_search_link() . '" title="' . esc_attr(sprintf($this->args['labels']['search'], get_search_query())) . '">' . sprintf($this->args['labels']['search'], get_search_query()) . '</a>';
 		} elseif ($this->args['show_title'] === true){
 			$newItemLabel = sprintf($this->args['labels']['search'], get_search_query());
 			$this->addItem(new WabootBreadcrumbItem($newItemLabel));
