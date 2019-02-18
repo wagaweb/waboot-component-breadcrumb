@@ -102,9 +102,9 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			}elseif(is_archive()){
 
 			}elseif(is_search()){
-
+				$this->addSearchItems();
 			}elseif(is_404()){
-
+				$this->add404Items();
 			}
 		}
 
