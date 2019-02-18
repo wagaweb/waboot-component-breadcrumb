@@ -585,40 +585,132 @@ trait ItemsDetectorTrait{
 		return $return;
 	}
 
+	/**
+	 * Adds the items to the trail items array for user (author) archives
+	 */
 	public function addUserArchiveItems(){
-		//todo
+		global $wp_rewrite;
+
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
+
+		// Get the user ID.
+		$user_id = get_query_var('author');
+
+		// If $author_base exists, check for parent pages.
+		if (!empty($wp_rewrite->author_base)){
+			$this->addPostParentsByPath($wp_rewrite->author_base);
+		}
+
+		// Add the author's display name to the trail end.
+		if (is_paged()){
+			$newItemLabel = get_the_author_meta('display_name', $user_id);
+			$newItemUrl = get_author_posts_url($user_id);
+			$this->addItem(new WabootBreadcrumbItem($newItemLabel,$newItemUrl));
+		} elseif ($this->canShowTitles()){
+			$this->addItem(new WabootBreadcrumbItem(get_the_author_meta('display_name', $user_id)));
+		}
 	}
 
+	/**
+	 * Adds the items to the trail items array for minute + hour archives
+	 */
 	public function addMinuteHourArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
+
+		// Add the minute + hour item.
+		if ($this->canShowTitles()){
+			$newItemLabel = sprintf($this->args['labels']['archive_minute_hour'], get_the_time(_x('g:i a', 'minute and hour archives time format', 'breadcrumb-trail')));
+			$this->addItem(new WabootBreadcrumbItem($newItemLabel));
+		}
 	}
 
+	/**
+	 * Adds the items to the trail items array for minute archives.
+	 */
 	public function addMinuteArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
+
+		// Add the minute item.
+		if ($this->canShowTitles()){
+			$newItemLabel = sprintf( $this->args['labels']['archive_minute'], get_the_time( _x( 'i', 'minute archives time format', 'breadcrumb-trail' ) ) );
+			$this->addItem(new WabootBreadcrumbItem($newItemLabel));
+		}
 	}
 
+	/**
+	 * Adds the items to the trail items array for hour archives.
+	 */
 	public function addHourArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
+
+		// Add the hour item.
+		if ($this->canShowTitles()){
+			$newItemLabel = sprintf( $this->args['labels']['archive_hour'], get_the_time( _x( 'g a', 'hour archives time format', 'breadcrumb-trail' ) ) );
+			$this->addItem(new WabootBreadcrumbItem($newItemLabel));
+		}
 	}
 
+	/**
+	 * Adds the items to the trail items array for day archives.
+	 */
 	public function addDayArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
+
+		// Get year, month, and day.
+		$year = sprintf($this->getLabel('archive_year'), get_the_time(_x('Y', 'yearly archives date format', 'breadcrumb-trail')));
+		$month = sprintf( $this->getLabel('archive_month'), get_the_time( _x( 'F', 'monthly archives date format', 'breadcrumb-trail' ) ) );
+		$day = sprintf($this->getLabel('archive_day'), get_the_time(_x('j', 'daily archives date format', 'breadcrumb-trail')));
+
+		// Add the year and month items.
+		$yearItem = new WabootBreadcrumbItem($year,get_year_link(get_the_time('Y')));
+		$monthItem = new WabootBreadcrumbItem($month,get_month_link(get_the_time('Y'), get_the_time('m')));
+		$this->addItem($yearItem);
+		$this->addItem($monthItem);
+
+		// Add the day item.
+		if (is_paged()){
+			$newItemUrl = get_day_link( get_the_time( 'Y' ), get_the_time( 'm' ), get_the_time( 'd' ) );
+			$this->addItem(new WabootBreadcrumbItem($day, $newItemUrl));
+		} elseif ($this->canShowTitles()){
+			$this->addItem(new WabootBreadcrumbItem($day));
+		}
 	}
 
+	/**
+	 *
+	 */
 	public function addWeekArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
 	}
 
+	/**
+	 *
+	 */
 	public function addMonthArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
 	}
 
+	/**
+	 *
+	 */
 	public function addYearArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
 	}
 
+	/**
+	 *
+	 */
 	public function addDefaultArchiveItems(){
-		//todo
+		// Add $wp_rewrite->front to the trail.
+		$this->addFrontItems();
 	}
 
 	/**
