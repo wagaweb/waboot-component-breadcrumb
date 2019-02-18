@@ -19,7 +19,6 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			//'show_edit_link'  => false,
 			'show_title' => true,
 			'show_browse' => true,
-			'echo' => true,
 			// Post taxonomy (examples follow).
 			'post_taxonomy' => [
 				// 'post'  => 'post_tag',
@@ -58,7 +57,7 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 	/**
 	 * Populate the items array
 	 */
-	public function populateItems(){
+	private function populateItems(){
 		if(is_front_page()){
 			//Only show front items if the 'show_on_front' argument is set to 'true'.
 			if($this->args['show_on_front'] || (is_singular() && 1 < get_query_var('page'))){
@@ -117,7 +116,7 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 	/**
 	 * @return bool
 	 */
-	public function canShowTitles(){
+	private function canShowTitles(){
 		return $this->args['show_title'] === true;
 	}
 
@@ -125,7 +124,7 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 	 * @param $labelIndex
 	 * @return string
 	 */
-	public function getLabel($labelIndex){
+	private function getLabel($labelIndex){
 		if(\array_key_exists($labelIndex,$this->args['labels'])){
 			return $this->args['labels'][$labelIndex];
 		}
@@ -133,13 +132,29 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 	}
 
 	/**
+	 * Render the breadcrumb HTML
+	 */
+	public function renderHtml(){
+		$bc = $this->getHtml();
+		echo $bc;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getHtml(){
+		$bc = $this->trail();
+		return $bc;
+	}
+
+	/**
      * Formats and outputs the breadcrumb trail.
      *
      * @since  1.0
      * @access public
-     * @return string|void
+     * @return string
      */
-    public function trail() {
+    private function trail() {
         $breadcrumb = '';
 
 	    $items = apply_filters( 'waboot/component/breadcrumb/items', $this->getItems(), $this->args );
@@ -193,17 +208,13 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
         /* Allow developers to filter the breadcrumb trail HTML. */
         $breadcrumb = apply_filters( 'breadcrumb_trail', $breadcrumb, $this->args );
 
-        if ( $this->args['echo'] === true ){
-	        echo $breadcrumb;
-        } else{
-	        return $breadcrumb;
-        }
+        return $breadcrumb;
     }
 
 	/**
 	 * @return string
 	 */
-    public function trailStart(){
+    private function trailStart(){
 	    $str = "\n\t\t" . '<' . tag_escape($this->args['container']) . ' class="breadcrumb-trail breadcrumbs ' . $this->args['additional_classes'] . '" itemprop="breadcrumb">';
 
 	    // Open Wrapper
@@ -218,7 +229,7 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 	/**
 	 * @return string
 	 */
-    public function trailEnd(){
+	private function trailEnd(){
 	    // If $after was set, wrap it in a container.
 	    $str = ( !empty( $this->args['after'] ) ? "\n\t\t\t" . ' <span class="trail-after">' . $this->args['after'] . '</span>' : '' );
 

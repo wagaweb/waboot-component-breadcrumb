@@ -175,7 +175,7 @@ class Breadcrumb extends \Waboot\Component {
 
 		$bc = new WabootBreadcrumbTrail($args);
 
-		$bc->trail();
+		$bc->renderHtml();
 	}
 
 	/**
