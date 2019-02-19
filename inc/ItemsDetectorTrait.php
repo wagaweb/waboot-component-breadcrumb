@@ -384,6 +384,7 @@ trait ItemsDetectorTrait{
 
 		// If we have parent terms, reverse the array to put them in the proper order for the trail.
 		if (!empty($parents)){
+		    $parents = array_reverse($parents);
 			foreach ($parents as $newItem){
 				$this->addItem($newItem);
 			}
