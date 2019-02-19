@@ -19,10 +19,16 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			//'show_edit_link'  => false,
 			'show_title' => true,
 			'show_browse' => true,
-			// Post taxonomy (examples follow).
+			/*
+			Post taxonomy (examples follow).
+            You can prepend the term name to a specific singular post type
+            by specify the taxonomy name here, for example:
+            'book' => 'genre' will prepend the term assigned to a book in the
+            'genre' taxonomy before the book title
+			*/
 			'post_taxonomy' => [
 				// 'post'  => 'post_tag',
-				// 'book'  => 'category',
+				// 'book'  => 'genre',
 			],
 			// Labels for text used (see Breadcrumb_Trail::default_labels).
 			'labels' => [
