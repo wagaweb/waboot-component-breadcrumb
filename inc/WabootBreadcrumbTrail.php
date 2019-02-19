@@ -22,7 +22,7 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			// Post taxonomy (examples follow).
 			'post_taxonomy' => [
 				// 'post'  => 'post_tag',
-				// 'book'  => 'genre',
+				// 'book'  => 'category',
 			],
 			// Labels for text used (see Breadcrumb_Trail::default_labels).
 			'labels' => [
@@ -47,7 +47,12 @@ class WabootBreadcrumbTrail extends WBF\components\breadcrumb\Breadcrumb {
 			]
 		];
 
-		$args['labels'] = apply_filters('waboot/component/breadcrumb/breadcrumb_args/labels', wp_parse_args($args['labels'], $defaults['labels']));
+		if(!isset($args['labels'])){
+		    $args['labels'] = [];
+        }
+
+		$args['labels'] = wp_parse_args($args['labels'], $defaults['labels']);
+		$args['labels'] = apply_filters('waboot/component/breadcrumb/breadcrumb_args/labels',$args['labels']);
 
 		$this->args = apply_filters('waboot/component/breadcrumb/breadcrumb_args', wp_parse_args($args, $defaults));
 
