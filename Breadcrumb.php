@@ -4,7 +4,7 @@ Component Name: Breadcrumb Component
 Description: Display a breadcrumb. You can customize where it should be displayed in Theme Options page.
 Category: Layout
 Tags: Breadcrumb
-Version: 1.1.0
+Version: 1.2.0
 Author: Waboot Team <info@waboot.io>
 Author URI: http://www.waboot.io
 */
